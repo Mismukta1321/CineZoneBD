@@ -228,13 +228,12 @@ def send_telegram_notification(movie_data, content_id, notification_type='new', 
         # --- ডাইনামিক ইনলাইন বাটন তৈরি ---
         inline_keyboard = []
         
-        # MODIFIED START: Change main button to link to homepage
-        visit_url = url_for('home', _external=True)
+        # *** FINAL CHANGE: Use WEBSITE_URL directly for reliable linking ***
+        visit_url = WEBSITE_URL 
         inline_keyboard.append([
             {'text': main_button_text, 'url': visit_url}
         ])
-        # MODIFIED END
-
+        
         # 2. How to Download বাটন (যদি লিংক সেট করা থাকে)
         tutorial_url = site_config.get('tutorial_video_url')
         if tutorial_url:
