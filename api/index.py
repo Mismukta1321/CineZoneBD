@@ -19,7 +19,7 @@ ADMIN_USERNAME = os.environ.get("ADMIN_USERNAME", "Nahid421")
 ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "Nahid421")
 WEBSITE_NAME = os.environ.get("WEBSITE_NAME", "CineZoneBD")
 DEVELOPER_TELEGRAM_ID = os.environ.get("DEVELOPER_TELEGRAM_ID", "CineZoneBDBot")
-WEBSITE_URL = os.environ.get("WEBSITE_URL", "https://your-website-url.com") 
+WEBSITE_URL = os.environ.get("WEBSITE_URL", "https://your-website-url.com")
 # নতুন: সুরক্ষিত অ্যাডমিন ইউআরএল
 ADMIN_URL = os.environ.get("ADMIN_URL", "/admin")
 
@@ -55,7 +55,7 @@ COMMUNITY_LINKS = [
 # --- App Initialization ---
 PLACEHOLDER_POSTER = "https://via.placeholder.com/400x600.png?text=Poster+Not+Found"
 ITEMS_PER_PAGE = 20
-ADMIN_ITEMS_PER_PAGE = 30 
+ADMIN_ITEMS_PER_PAGE = 30
 app = Flask(__name__)
 app.secret_key = os.environ.get("FLASK_SECRET_KEY", "a_super_secret_key_for_flash_messages")
 
@@ -92,7 +92,7 @@ try:
         categories_to_insert = [{"name": cat, "order": i} for i, cat in enumerate(default_categories)]
         categories_collection.insert_many(categories_to_insert)
         print("SUCCESS: Initialized default categories in the database with order.")
-    
+
     if categories_collection.count_documents({"order": {"$exists": False}}) > 0:
         print("INFO: Migrating old categories to include 'order' field...")
         cats_to_update = list(categories_collection.find({"order": {"$exists": False}}))
@@ -121,7 +121,7 @@ try:
         movies.create_index("tmdb_id")
         movies.create_index("ott_platform")
         categories_collection.create_index("name", unique=True)
-        categories_collection.create_index("order") 
+        categories_collection.create_index("order")
         ott_collection.create_index("name", unique=True)
         requests_collection.create_index("status")
         print("SUCCESS: MongoDB indexes checked/created.")
@@ -171,7 +171,7 @@ def send_telegram_notification(movie_data, content_id, notification_type='new', 
     tele_configs = settings.find_one({"_id": "telegram_config"}) or {}
     site_config = settings.find_one({"_id": "site_config"}) or {}
     channels = tele_configs.get('channels', [])
-    
+
     # MODIFIED START: Get custom button texts from settings
     button_texts = tele_configs.get('button_texts', {})
     main_button_text = button_texts.get('main_button', '✅ Watch on Website')
@@ -183,7 +183,7 @@ def send_telegram_notification(movie_data, content_id, notification_type='new', 
     if not channels and (not TELEGRAM_BOT_TOKEN or not TELEGRAM_CHANNEL_ID):
         print("INFO: No Telegram channels configured. Skipping notification.")
         return
-        
+
     if TELEGRAM_BOT_TOKEN and TELEGRAM_CHANNEL_ID:
         if not any(c.get('channel_id') == TELEGRAM_CHANNEL_ID for c in channels):
             channels.append({'token': TELEGRAM_BOT_TOKEN, 'channel_id': TELEGRAM_CHANNEL_ID})
@@ -195,7 +195,7 @@ def send_telegram_notification(movie_data, content_id, notification_type='new', 
     try:
         # --- নতুন এবং সুন্দর ক্যাপশন তৈরি ---
         caption_parts = []
-        
+
         # MODIFIED START: More dynamic caption based on update type
         if notification_type == 'update' and series_update_info:
             caption_parts.append(f"⭐️ **New Update on {WEBSITE_NAME}!** ⭐️")
@@ -218,22 +218,22 @@ def send_telegram_notification(movie_data, content_id, notification_type='new', 
                 quality_str = " | ".join(qualities)
         elif movie_data.get('type') == 'series':
             quality_str = "All Episodes"
-        
+
         caption_parts.append(f"💿 **Quality:** `{quality_str}`")
         caption_parts.append("━━━━━━━━━━━━━━━━━")
         caption_parts.append("👇 **Click Below to Watch or Download** 👇")
 
         final_caption = "\n".join(caption_parts)
-        
+
         # --- ডাইনামিক ইনলাইন বাটন তৈরি ---
         inline_keyboard = []
-        
+
         # *** FINAL CHANGE: Use WEBSITE_URL directly for reliable linking ***
-        visit_url = WEBSITE_URL 
+        visit_url = WEBSITE_URL
         inline_keyboard.append([
             {'text': main_button_text, 'url': visit_url}
         ])
-        
+
         # 2. How to Download বাটন (যদি লিংক সেট করা থাকে)
         tutorial_url = site_config.get('tutorial_video_url')
         if tutorial_url:
@@ -247,7 +247,7 @@ def send_telegram_notification(movie_data, content_id, notification_type='new', 
             inline_keyboard.append([
                 {'text': adult_button_text, 'url': adult_url}
             ])
-            
+
         # 4. Promotional Site বাটন (যদি লিংক সেট করা থাকে)
         promo_url = site_config.get('promo_site_url')
         if promo_url:
@@ -285,7 +285,7 @@ def send_telegram_notification(movie_data, content_id, notification_type='new', 
 
         if sent_count == 0:
             print("WARNING: Notification attempt failed for all configured channels.")
-            
+
     except Exception as e:
         print(f"ERROR: Unexpected error in send_telegram_notification: {e}")
 
@@ -322,12 +322,12 @@ def inject_globals():
     ad_settings = settings.find_one({"_id": "ad_config"})
     design_settings = settings.find_one({"_id": "design_config"}) or {}
     site_config = settings.find_one({"_id": "site_config"}) or {}
-    
+
     all_categories = [cat['name'] for cat in categories_collection.find().sort("order", 1)]
     all_ott_platforms = list(ott_collection.find().sort("name", 1))
-    
+
     category_icons = { "Bangla": "fa-film", "Hindi": "fa-film", "English": "fa-film", "18+ Adult": "fa-exclamation-circle", "Korean": "fa-tv", "Dual Audio": "fa-headphones", "Bangla Dubbed": "fa-microphone-alt", "Hindi Dubbed": "fa-microphone-alt", "Horror": "fa-ghost", "Action": "fa-bolt", "Thriller": "fa-knife-kitchen", "Anime": "fa-dragon", "Romance": "fa-heart", "Trending": "fa-fire", "ALL MOVIES": "fa-layer-group", "WEB SERIES & TV SHOWS": "fa-tv-alt", "HOME": "fa-home" }
-    
+
     return dict(
         website_name=WEBSITE_NAME,
         logo_url=site_config.get('logo_url'),
@@ -707,7 +707,7 @@ index_html = """
       color: var(--text-dark);
   }
 
-  @media (min-width: 769px) { 
+  @media (min-width: 769px) {
     .container { padding: 0 40px; } .main-header { padding: 0 40px; }
     body { padding-bottom: 0; } .bottom-nav { display: none; }
     .hero-slider .hero-title { font-size: 2.2rem; }
@@ -1290,6 +1290,16 @@ detail_html = """
             {% endif %}
             
             {% if movie.type == 'series' %}
+                <!-- MODIFIED START: Added a separate button for manual links in a series -->
+                {% if movie.manual_links %}
+                <div class="link-group" style="margin-bottom: 25px;">
+                    <a href="{{ url_for('get_links_encoded', encoded_id=movie._id|string|b64encode) }}" class="action-btn" style="justify-content: center; font-size: 1.1rem; padding: 16px;">
+                        <span><i class="fas fa-archive"></i> Get Other/Manual Links</span>
+                    </a>
+                </div>
+                {% endif %}
+                <!-- MODIFIED END -->
+
                 {% set all_seasons = ((movie.episodes | map(attribute='season') | list) + (movie.season_packs | map(attribute='season_number') | list)) | unique | sort %}
                 {% for season_num in all_seasons %}
                     <div class="episode-list" style="margin-bottom: 20px;">
@@ -2259,23 +2269,36 @@ generate_links_html = """
                     </a>
                     {% endfor %}
                 {% endif %}
-            {% elif movie.type == 'series' and season_num is defined %}
-                {% set season_pack = (movie.season_packs | selectattr('season_number', 'equalto', season_num) | first) if movie.season_packs else none %}
-                {% if season_pack and (season_pack.download_link or season_pack.watch_link) %}
-                <a href="{{ season_pack.download_link or season_pack.watch_link }}" target="_blank" class="link-button">
-                    <span class="quality">Season {{ season_num }} Complete</span>
-                    <span class="icon"><i class="fas fa-file-archive"></i></span>
-                </a>
-                {% endif %}
-                
-                {% for ep in episodes_for_season | sort(attribute='episode_number') %}
-                    {% if ep.watch_link %}
-                    <a href="{{ ep.watch_link }}" target="_blank" class="link-button">
-                        <span class="quality">Episode {{ ep.episode_number }}: {{ ep.title or 'Watch/Download' }}</span>
-                        <span class="icon"><i class="fas fa-play"></i></span>
+            {% elif movie.type == 'series' %}
+                <!-- MODIFIED START: This block now shows season-specific links and also manual links -->
+                {% if season_num is defined %}
+                    {% set season_pack = (movie.season_packs | selectattr('season_number', 'equalto', season_num) | first) if movie.season_packs else none %}
+                    {% if season_pack and (season_pack.download_link or season_pack.watch_link) %}
+                    <a href="{{ season_pack.download_link or season_pack.watch_link }}" target="_blank" class="link-button">
+                        <span class="quality">Season {{ season_num }} Complete</span>
+                        <span class="icon"><i class="fas fa-file-archive"></i></span>
                     </a>
                     {% endif %}
-                {% endfor %}
+                    
+                    {% for ep in episodes_for_season | sort(attribute='episode_number') %}
+                        {% if ep.watch_link %}
+                        <a href="{{ ep.watch_link }}" target="_blank" class="link-button">
+                            <span class="quality">Episode {{ ep.episode_number }}: {{ ep.title or 'Watch/Download' }}</span>
+                            <span class="icon"><i class="fas fa-play"></i></span>
+                        </a>
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+
+                {% if movie.manual_links %}
+                    {% for m_link in movie.manual_links %}
+                    <a href="{{ m_link.url }}" target="_blank" class="link-button">
+                        <span class="quality">{{ m_link.name }}</span>
+                        <span class="icon"><i class="fas fa-link"></i></span>
+                    </a>
+                    {% endfor %}
+                {% endif %}
+                 <!-- MODIFIED END -->
             {% endif %}
             <p class="disclaimer"><strong>Disclaimer:</strong> This site does not host any files. All links are provided by non-affiliated third parties. We are not responsible for the content on external sites.</p>
         </div>
@@ -2450,12 +2473,15 @@ def generate_links_page(encoded_id):
         has_movie_links = movie.get('links') or movie.get('manual_links')
         
         if movie.get('type') == 'series':
-            if not season_num: return "Season number is required for series.", 400
-            if 'episodes' in movie:
-                episodes_for_season = [ep for ep in movie['episodes'] if ep.get('season') == season_num]
-            has_season_pack = any(p.get('season_number') == season_num for p in movie.get('season_packs', []))
-            if not episodes_for_season and not has_season_pack:
-                return f"No links found for Season {season_num}.", 404
+            has_season_pack = False
+            if season_num is not None:
+                if 'episodes' in movie:
+                    episodes_for_season = [ep for ep in movie['episodes'] if ep.get('season') == season_num]
+                has_season_pack = any(p.get('season_number') == season_num for p in movie.get('season_packs', []))
+            
+            if not episodes_for_season and not has_season_pack and not movie.get('manual_links'):
+                 return f"No links found for this content.", 404
+        
         elif movie.get('type') == 'movie' and not has_movie_links:
             return "No links found for this content.", 404
 
